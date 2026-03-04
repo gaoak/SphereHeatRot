@@ -1,6 +1,6 @@
 # OpenFOAM 12 旋转圆球流-固耦合传热算例模板
 
-这个算例用于 **OpenFOAM v12**，目标是模拟（按你要求先采用层流/DNS思路，不启用 RANS 湍流模型）：
+这个算例用于 **OpenFOAM v12**，目标是模拟（按你要求采用不可压缩 + 层流/DNS 思路）：
 - 外部流体绕流；
 - 实心圆球内部导热；
 - 流固界面的共轭传热（CHT）；
@@ -13,6 +13,7 @@
 
 - `chtMultiRegionFoam`
 - 流动模型：`laminar`（不启用湍流模型）
+- 密度模型：`rhoConst`（常密度，不可压缩近似）
 
 ## 区域划分
 
@@ -34,5 +35,5 @@ cd case
 2. 转速：`0/fluid/U` 中 `omega`（rad/s）
 3. 来流速度与温度：`0/fluid/U`, `0/fluid/T`
 4. 固体初始温度：`0/solid/T`
-5. 材料属性：`constant/fluid/thermophysicalProperties`, `constant/solid/thermophysicalProperties`
+5. 材料属性与常密度设置：`constant/fluid/thermophysicalProperties`, `constant/solid/thermophysicalProperties`
 
