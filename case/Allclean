@@ -1,0 +1,8 @@
+#!/bin/bash
+set -e
+
+cd "${0%/*}" || exit 1
+
+foamListTimes -rm || true
+rm -rf constant/fluid/polyMesh constant/solid/polyMesh constant/polyMesh
+rm -rf processor*

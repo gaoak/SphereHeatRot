@@ -1,0 +1,13 @@
+#!/bin/bash
+set -e
+
+cd "${0%/*}" || exit 1
+
+blockMesh
+snappyHexMesh -overwrite
+splitMeshRegions -cellZones -overwrite
+
+# 初始化多区域场
+setFields
+
+chtMultiRegionFoam
