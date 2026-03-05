@@ -35,6 +35,8 @@ cd case
 - 首次运行自动执行网格、区域切分、初始化、`decomposePar -allRegions`；
 - 后续若存在 `log.decomposePar`，会跳过预处理直接并行求解；
 - 初始场由 `0.orig` 自动恢复到 `0`，便于重复计算。
+- `setFields` 会按 `fluid/solid` 两个 region 分别执行，避免 `Field T not found` 警告；
+- 即使有 `log.decomposePar`，若检测到 `polyMesh/points` 缺失也会自动重建，避免 `cannot find file "points" in directory "fluid/polyMesh"`。
 
 ## 典型可调参数
 

@@ -1,8 +1,13 @@
-#!/bin/bash
+#!/bin/sh
 set -e
 
 cd "${0%/*}" || exit 1
 
 foamListTimes -rm || true
 rm -rf constant/fluid/polyMesh constant/solid/polyMesh constant/polyMesh
-rm -rf processor*
+rm -rf processor* reconstructed* postProcessing VTK
+rm -f log.*
+
+# 保留 0.orig，恢复 0 方便下次运行
+rm -rf 0
+cp -r 0.orig 0

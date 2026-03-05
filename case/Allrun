@@ -5,13 +5,16 @@ cd "${0%/*}" || exit 1
 
 set -e
 
-###########################################
-# run（并行计算主流程）
-###########################################
+need_pre=0
 
-# 检查是否需要执行分解前步骤
-if [ ! -f "log.decomposePar" ]; then
-    echo "未找到 log.decomposePar，执行分解前步骤..."
+# 若缺少关键网格/并行文件，则必须重做预处理
+[ -f "constant/fluid/polyMesh/points" ] || need_pre=1
+[ -f "constant/solid/polyMesh/points" ] || need_pre=1
+[ -f "processor0/fluid/polyMesh/points" ] || need_pre=1
+
+# 仅当日志存在且关键文件齐全，才允许跳过
+if [ ! -f "log.decomposePar" ] || [ "$need_pre" -eq 1 ]; then
+    echo "执行预处理（建网格/分区/初始化/分解）..."
 
     # 0) 清理旧并行与后处理残留
     rm -rf processor*
@@ -26,23 +29,23 @@ if [ ! -f "log.decomposePar" ]; then
     rm -f 0/cellToRegion 0/*/cellToRegion constant/cellToRegion
 
     # 3) 清理旧日志
-    rm -f log.decomposePar log.blockMesh log.snappyHexMesh log.splitMeshRegions log.setFields
+    rm -f log.decomposePar log.blockMesh log.snappyHexMesh log.splitMeshRegions log.setFields* log.decomposePar*
 
     # 4) 网格与区域划分
     runApplication blockMesh
     runApplication snappyHexMesh -overwrite
     runApplication splitMeshRegions -cellZones -overwrite
 
-    # 5) 初始化多区域场
-    runApplication setFields
+    # 5) 初始化多区域场（显式指定 region，避免 setFields.C: Field T not found）
+    runApplication -s setFieldsFluid setFields -region fluid
+    runApplication -s setFieldsSolid setFields -region solid
 
     # 6) 并行分解（所有 region）
     runApplication decomposePar -allRegions -copyZero -cellProc
 
-    # 标记分解完成
     touch log.decomposePar
 else
-    echo "找到 log.decomposePar，跳过分解前步骤，直接进行并行计算..."
+    echo "检测到已有分解结果，跳过预处理，直接并行求解..."
 fi
 
 # 7) 并行求解
