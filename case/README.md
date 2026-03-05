@@ -17,6 +17,8 @@
 
 ## 区域划分
 
+几何文件位置：`constant/triSurface/rotatingSphere.stl`（供 `snappyHexMesh` 读取）。
+
 - `fluid`：外部空气区域
 - `solid`：球体实体区域
 

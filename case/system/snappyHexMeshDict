@@ -14,9 +14,8 @@ geometry
 {
     rotatingSphere
     {
-        type searchableSphere;
-        centre (0 0 0);
-        radius 0.03;
+        type triSurfaceMesh;
+        file "rotatingSphere.stl";
     }
 }
 
