@@ -31,6 +31,11 @@ cd case
 ./Allrun
 ```
 
+`Allrun` 已按 OpenFOAM `RunFunctions` 风格改写：
+- 首次运行自动执行网格、区域切分、初始化、`decomposePar -allRegions`；
+- 后续若存在 `log.decomposePar`，会跳过预处理直接并行求解；
+- 初始场由 `0.orig` 自动恢复到 `0`，便于重复计算。
+
 ## 典型可调参数
 
 1. 球半径、计算域尺寸：`system/blockMeshDict`, `system/snappyHexMeshDict`

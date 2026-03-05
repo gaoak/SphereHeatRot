@@ -26,3 +26,7 @@ log*
 # Editor/OS noise
 .DS_Store
 Thumbs.db
+
+# Keep template initial fields
+!case/0.orig/
+!case/0.orig/**

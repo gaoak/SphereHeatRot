@@ -1,13 +1,54 @@
-#!/bin/bash
+#!/bin/sh
+cd "${0%/*}" || exit 1
+. "${WM_PROJECT_DIR:?}/bin/tools/RunFunctions"
+#------------------------------------------------------------------------------
+
 set -e
 
-cd "${0%/*}" || exit 1
+###########################################
+# run（并行计算主流程）
+###########################################
 
-blockMesh
-snappyHexMesh -overwrite
-splitMeshRegions -cellZones -overwrite
+# 检查是否需要执行分解前步骤
+if [ ! -f "log.decomposePar" ]; then
+    echo "未找到 log.decomposePar，执行分解前步骤..."
 
-# 初始化多区域场
-setFields
+    # 0) 清理旧并行与后处理残留
+    rm -rf processor*
+    rm -rf postProcessing
+    rm -rf VTK
 
-chtMultiRegionFoam
+    # 1) 还原初始场（从 0.orig）
+    rm -rf 0
+    cp -r 0.orig 0
+
+    # 2) 清理 cellToRegion 等中间文件
+    rm -f 0/cellToRegion 0/*/cellToRegion constant/cellToRegion
+
+    # 3) 清理旧日志
+    rm -f log.decomposePar log.blockMesh log.snappyHexMesh log.splitMeshRegions log.setFields
+
+    # 4) 网格与区域划分
+    runApplication blockMesh
+    runApplication snappyHexMesh -overwrite
+    runApplication splitMeshRegions -cellZones -overwrite
+
+    # 5) 初始化多区域场
+    runApplication setFields
+
+    # 6) 并行分解（所有 region）
+    runApplication decomposePar -allRegions -copyZero -cellProc
+
+    # 标记分解完成
+    touch log.decomposePar
+else
+    echo "找到 log.decomposePar，跳过分解前步骤，直接进行并行计算..."
+fi
+
+# 7) 并行求解
+runParallel chtMultiRegionFoam
+
+# 8) 可选回收串行结果（按需启用）
+# runApplication reconstructPar -allRegions
+
+#------------------------------------------------------------------------------
