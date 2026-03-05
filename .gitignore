@@ -1,0 +1,28 @@
+# OpenFOAM runtime outputs
+[0-9]*
+[0-9]*.[0-9]*
+
+# Parallel and reconstructed data
+processor*
+reconstructed*
+
+# Mesh and region mesh outputs
+constant/polyMesh/
+constant/*/polyMesh/
+
+# Post-processing outputs
+postProcessing/
+VTK/
+*.foam
+
+# Logs and temporary files
+log*
+*.log
+*.out
+*.err
+*.tmp
+*.bak
+
+# Editor/OS noise
+.DS_Store
+Thumbs.db
