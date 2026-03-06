@@ -1,0 +1,54 @@
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       volScalarField;
+    object      p;
+}
+
+dimensions      [1 -1 -2 0 0 0 0];
+internalField   uniform 0;
+
+boundaryField
+{
+    inlet
+    {
+        type            zeroGradient;
+    }
+
+    outlet
+    {
+        type            fixedValue;
+        value           uniform 0;
+    }
+
+    sideWalls
+    {
+        type            zeroGradient;
+    }
+
+    fluid_to_solid
+    {
+        type            zeroGradient;
+    }
+
+    region1_to_solid
+    {
+        type            zeroGradient;
+    }
+
+    fluid_to_region1
+    {
+        type            zeroGradient;
+    }
+
+    "proBoundary.*"
+    {
+        type            processor;
+    }
+
+    "procBoundary.*"
+    {
+        type            processor;
+    }
+}
