@@ -86,3 +86,5 @@ cd case
 - `system/fluid/fvSolution` 已补充 `p_rghFinal` 求解器条目（`relTol 0`），避免压力最终校正阶段报 `keyword p_rghFinal is undefined`。
 
 - 如需快速定位分支合并冲突，可在仓库根目录执行 `scripts/check_merge_conflicts.sh`（会列出 `git diff --diff-filter=U` 和冲突标记文件）。
+
+- 若需和 `main` 做冲突预测，可执行 `scripts/check_conflicts_with_main.sh main`：会列出 merge-base 两侧都改过的文件（最可能冲突的清单）。
