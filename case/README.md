@@ -49,6 +49,8 @@ cd case
 - `splitMeshRegions` 若把外部区域命名成 `region0/region1/...`，`Allrun` 会自动识别并映射为 `fluid`，避免 `decomposePar` 报 `cannot find file "points" in directory "fluid/polyMesh"`。
 - `Allrun` 在 region 映射时仅移动 `polyMesh` 到 `constant/fluid/polyMesh`，不会覆盖 `constant/fluid/physicalProperties` 等物性字典。
 
+- 固体 `thermoType.transport` 使用 OF12 支持的 `constIsoSolid`（不是 `constIso`），避免 `Unknown transport type constIso`。
+
 ## 典型可调参数
 
 1. 球半径、计算域尺寸：`system/blockMeshDict`, `system/snappyHexMeshDict`

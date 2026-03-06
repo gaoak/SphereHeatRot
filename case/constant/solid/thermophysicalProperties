@@ -10,7 +10,7 @@ thermoType
 {
     type            heSolidThermo;
     mixture         pureMixture;
-    transport       constIso;
+    transport       constIsoSolid;
     thermo          hConst;
     equationOfState rhoConst;
     specie          specie;
