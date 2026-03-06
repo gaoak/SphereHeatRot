@@ -37,6 +37,7 @@ cd case
 - 初始场由 `0.orig` 自动恢复到 `0`，便于重复计算。
 - `setFields` 仅对 `solid` 执行（`setFields -region solid`），避免在 `fluid` 上触发 `cannot find file "points" in directory "fluid/polyMesh"`；
 - 即使有 `log.decomposePar`，若检测到 `polyMesh/points` 缺失也会自动重建，避免 `cannot find file "points" in directory "fluid/polyMesh"`。
+- 多区域 `setFields -region solid` 会读取 `system/solid/setFieldsDict`；该文件已提供。
 
 ## 典型可调参数
 
