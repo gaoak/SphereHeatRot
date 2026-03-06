@@ -8,6 +8,13 @@ FoamFile
 
 application     chtMultiRegionFoam;
 
+
+regionSolvers
+{
+    fluid       chtMultiRegionFoam;
+    solid       chtMultiRegionFoam;
+}
+
 startFrom       startTime;
 startTime       0;
 
