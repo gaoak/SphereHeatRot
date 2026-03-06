@@ -38,6 +38,7 @@ cd case
 - `setFields` 仅对 `solid` 执行（`setFields -region solid`），避免在 `fluid` 上触发 `cannot find file "points" in directory "fluid/polyMesh"`；
 - 即使有 `log.decomposePar`，若检测到 `polyMesh/points` 缺失也会自动重建，避免 `cannot find file "points" in directory "fluid/polyMesh"`。
 - 多区域 `setFields -region solid` 会读取 `system/solid/setFieldsDict`；该文件已提供。
+- `0/solid/T` 与 `0.orig/solid/T` 同时提供 `solid_to_fluid` 和 `solid_to_region1` 边界项，兼容 `splitMeshRegions` 不同命名结果。
 
 ## 典型可调参数
 

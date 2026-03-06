@@ -18,4 +18,12 @@ boundaryField
         kappaMethod     solidThermo;
         value           uniform 360;
     }
+
+    solid_to_region1
+    {
+        type            compressible::turbulentTemperatureCoupledBaffleMixed;
+        Tnbr            T;
+        kappaMethod     solidThermo;
+        value           uniform 360;
+    }
 }
