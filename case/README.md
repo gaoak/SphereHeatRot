@@ -78,3 +78,5 @@ cd case
 
 - `Allrun` 现已直接使用 `runParallel foamMultiRun`（不再调用 `chtMultiRegionFoam` 包装入口），避免重复 superseded 提示。
 - `system/fluid/fvSchemes` 已显式补充 `div(phi,K)`，避免启动后报 `Cannot find scheme for div(phi,K)`。
+
+- `splitMeshRegions` 后若目录被映射为 `fluid`，`Allrun` 会同步把 `polyMesh/boundary` 中残留的 `sampleRegion/neighbourRegion/nbrRegion region1` 重写为 `fluid`，避免 `request for fvMesh region1` 报错。

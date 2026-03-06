@@ -18,6 +18,19 @@ check_file() {
     fi
 }
 
+check_not_contains() {
+    file="$1"
+    pattern="$2"
+    msg="$3"
+
+    if grep -En "$pattern" "$file" >/dev/null 2>&1; then
+        echo "[FAIL] $msg"
+        fail=1
+    else
+        echo "[ OK ] $msg"
+    fi
+}
+
 check_contains() {
     file="$1"
     pattern="$2"
@@ -91,6 +104,12 @@ if [ -d processor0 ]; then
             check_contains "$procField" "^[[:space:]]*$p[[:space:]]*$" "$procField contains explicit $p entry"
         done
     done
+fi
+
+
+if [ ! -d constant/region1 ]; then
+    [ -f constant/fluid/polyMesh/boundary ] && check_not_contains constant/fluid/polyMesh/boundary "sampleRegion[[:space:]]+region1;|neighbourRegion[[:space:]]+region1;|nbrRegion[[:space:]]+region1;" "fluid boundary has no lingering region1 mapping refs"
+    [ -f constant/solid/polyMesh/boundary ] && check_not_contains constant/solid/polyMesh/boundary "sampleRegion[[:space:]]+region1;|neighbourRegion[[:space:]]+region1;|nbrRegion[[:space:]]+region1;" "solid boundary has no lingering region1 mapping refs"
 fi
 
 if [ "$fail" -ne 0 ]; then

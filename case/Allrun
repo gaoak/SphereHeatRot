@@ -99,6 +99,21 @@ ensure_processor_boundary_entries() {
     done
 }
 
+
+rewrite_boundary_region_refs() {
+    oldRegion="$1"
+    newRegion="$2"
+
+    [ -n "$oldRegion" ] || return 0
+    [ -n "$newRegion" ] || return 0
+    [ "$oldRegion" = "$newRegion" ] && return 0
+
+    for bf in constant/fluid/polyMesh/boundary constant/solid/polyMesh/boundary; do
+        [ -f "$bf" ] || continue
+        sed -i             -e "s/\(sampleRegion[[:space:]]*\)${oldRegion}\([[:space:]]*;\)/\1${newRegion}\2/g"             -e "s/\(neighbourRegion[[:space:]]*\)${oldRegion}\([[:space:]]*;\)/\1${newRegion}\2/g"             -e "s/\(nbrRegion[[:space:]]*\)${oldRegion}\([[:space:]]*;\)/\1${newRegion}\2/g"             "$bf"
+    done
+}
+
 need_pre=0
 
 # 若缺少关键网格/并行文件，则必须重做预处理
@@ -148,9 +163,16 @@ if [ ! -f "log.decomposePar" ] || [ "$need_pre" -eq 1 ]; then
             mkdir -p constant/fluid
             rm -rf constant/fluid/polyMesh
             mv "constant/$fluidCandidate/polyMesh" constant/fluid/polyMesh
+            rewrite_boundary_region_refs "$fluidCandidate" "fluid"
             # 删除候选目录（若为空）
             rmdir "constant/$fluidCandidate" 2>/dev/null || true
         fi
+    fi
+
+
+    # 4.1.1) 若不存在 region1 网格但边界映射仍引用 region1，则统一重写为 fluid
+    if [ ! -d "constant/region1" ]; then
+        rewrite_boundary_region_refs "region1" "fluid"
     fi
 
     # 4.2) 强校验：decomposePar -allRegions 前必须存在 fluid/solid 网格
