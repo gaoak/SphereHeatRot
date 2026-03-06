@@ -5,6 +5,10 @@ cd "${0%/*}" || exit 1
 
 fail=0
 
+if ! command -v rg >/dev/null 2>&1; then
+    echo "[WARN] rg not found, fallback to grep -E for content checks"
+fi
+
 check_file() {
     if [ ! -f "$1" ]; then
         echo "[FAIL] missing file: $1"
@@ -18,13 +22,24 @@ check_contains() {
     file="$1"
     pattern="$2"
     msg="$3"
-    if rg -n "$pattern" "$file" >/dev/null 2>&1; then
-        echo "[ OK ] $msg"
+
+    if command -v rg >/dev/null 2>&1; then
+        if rg -n "$pattern" "$file" >/dev/null 2>&1; then
+            echo "[ OK ] $msg"
+        else
+            echo "[FAIL] $msg"
+            fail=1
+        fi
     else
-        echo "[FAIL] $msg"
-        fail=1
+        if grep -En "$pattern" "$file" >/dev/null 2>&1; then
+            echo "[ OK ] $msg"
+        else
+            echo "[FAIL] $msg"
+            fail=1
+        fi
     fi
 }
+
 
 # Core region dictionaries
 check_file system/controlDict
@@ -71,7 +86,7 @@ if [ -d processor0 ]; then
         procId=$(echo "$procField" | awk -F/ '{print $1}')
         meshBoundary="$procId/constant/solid/polyMesh/boundary"
         [ -f "$meshBoundary" ] || continue
-        for p in $(awk '/^[[:space:]]*procBoundary[0-9]+to[0-9]+[[:space:]]*$/{gsub(/[[:space:]]/,"",$0); print $0}' "$meshBoundary"); do
+        for p in $(awk '/procBoundary[0-9]+to[0-9]+/ {for (i=1;i<=NF;i++) if ($i ~ /procBoundary[0-9]+to[0-9]+/) {gsub(/[^A-Za-z0-9]/,"",$i); print $i}}' "$meshBoundary"); do
             check_contains "$procField" "^[[:space:]]*$p[[:space:]]*$" "$procField contains explicit $p entry"
         done
     done

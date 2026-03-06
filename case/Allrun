@@ -12,7 +12,7 @@ ensure_proc_entries_for_field() {
     [ -f "$fieldFile" ] || return 0
     [ -f "$boundaryFile" ] || return 0
 
-    patchList=$(awk '/^[[:space:]]*procBoundary[0-9]+to[0-9]+[[:space:]]*$/{gsub(/[[:space:]]/,"",$0); print $0}' "$boundaryFile")
+    patchList=$(awk '/procBoundary[0-9]+to[0-9]+/ {for (i=1;i<=NF;i++) if ($i ~ /procBoundary[0-9]+to[0-9]+/) {gsub(/[^A-Za-z0-9]/,"",$i); print $i}}' "$boundaryFile")
     [ -n "$patchList" ] || return 0
 
     addBlock=""
