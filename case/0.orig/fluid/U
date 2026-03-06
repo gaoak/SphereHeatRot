@@ -55,4 +55,10 @@ boundaryField
         omega           100;
         value           uniform (0 0 0);
     }
+
+    "proBoundary.*"
+    {
+        type            processor;
+    }
+
 }

@@ -46,4 +46,10 @@ boundaryField
         type            fixedFluxPressure;
         value           uniform 0;
     }
+
+    "proBoundary.*"
+    {
+        type            processor;
+    }
+
 }

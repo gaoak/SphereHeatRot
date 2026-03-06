@@ -52,4 +52,10 @@ boundaryField
         kappaMethod     fluidThermo;
         value           uniform 300;
     }
+
+    "proBoundary.*"
+    {
+        type            processor;
+    }
+
 }
