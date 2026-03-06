@@ -84,3 +84,5 @@ cd case
 - `system/solid/fvSolution`（以及 fluid 侧保持一致）已将能量求解组扩展为 `(U|h|e|T).*`，并加入 `e` 松弛项，避免固体能量变量为 `e` 时出现 `keyword e is undefined`。
 
 - `system/fluid/fvSolution` 已补充 `p_rghFinal` 求解器条目（`relTol 0`），避免压力最终校正阶段报 `keyword p_rghFinal is undefined`。
+
+- 如需快速定位分支合并冲突，可在仓库根目录执行 `scripts/check_merge_conflicts.sh`（会列出 `git diff --diff-filter=U` 和冲突标记文件）。
