@@ -52,4 +52,10 @@ boundaryField
         type            processor;
     }
 
+
+    "procBoundary.*"
+    {
+        type            processor;
+    }
+
 }
