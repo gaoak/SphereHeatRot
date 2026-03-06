@@ -21,7 +21,7 @@ solvers
         smoother        GaussSeidel;
     }
 
-    "(U|h|T).*"
+    "(U|h|e|T).*"
     {
         solver          smoothSolver;
         smoother        symGaussSeidel;
@@ -44,6 +44,7 @@ relaxationFactors
     {
         U               0.7;
         h               0.9;
+        e               0.9;
         T               0.9;
     }
 }

@@ -80,3 +80,5 @@ cd case
 - `system/fluid/fvSchemes` 已显式补充 `div(phi,K)`，避免启动后报 `Cannot find scheme for div(phi,K)`。
 
 - `splitMeshRegions` 后若目录被映射为 `fluid`，`Allrun` 会同步把 `polyMesh/boundary` 中残留的 `sampleRegion/neighbourRegion/nbrRegion region1` 重写为 `fluid`，避免 `request for fvMesh region1` 报错。
+
+- `system/solid/fvSolution`（以及 fluid 侧保持一致）已将能量求解组扩展为 `(U|h|e|T).*`，并加入 `e` 松弛项，避免固体能量变量为 `e` 时出现 `keyword e is undefined`。
