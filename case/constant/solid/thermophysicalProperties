@@ -11,7 +11,7 @@ thermoType
     type            heSolidThermo;
     mixture         pureMixture;
     transport       constIsoSolid;
-    thermo          hConst;
+    thermo          eConst;
     equationOfState rhoConst;
     specie          specie;
     energy          sensibleEnthalpy;
@@ -29,7 +29,7 @@ mixture
     }
     thermodynamics
     {
-        Cp              500;
+        Cv              500;
         Hf              0;
     }
     transport
