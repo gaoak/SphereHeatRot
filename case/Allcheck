@@ -90,6 +90,7 @@ check_contains constant/solid/thermophysicalProperties "energy[[:space:]]+sensib
 
 check_contains constant/fluid/physicalProperties "thermoType" "fluid physicalProperties includes thermoType"
 check_contains system/fluid/fvSchemes "div\(phi,K\)" "fluid fvSchemes defines div(phi,K)"
+check_contains system/fluid/fvSolution "p_rghFinal" "fluid fvSolution defines p_rghFinal solver"
 check_contains system/solid/fvSolution "\(U\|h\|e\|T\)\.\*" "solid fvSolution covers e solver pattern"
 check_contains 0/fluid/T "\"procBoundary\\.\*\"" "0/fluid/T has procBoundary.* processor patch wildcard"
 check_contains 0/solid/T "\"procBoundary\\.\*\"" "0/solid/T has procBoundary.* processor patch wildcard"

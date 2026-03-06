@@ -21,6 +21,15 @@ solvers
         smoother        GaussSeidel;
     }
 
+
+    p_rghFinal
+    {
+        solver          GAMG;
+        tolerance       1e-8;
+        relTol          0;
+        smoother        GaussSeidel;
+    }
+
     "(U|h|e|T).*"
     {
         solver          smoothSolver;
