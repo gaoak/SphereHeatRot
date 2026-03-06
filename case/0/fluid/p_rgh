@@ -35,6 +35,12 @@ boundaryField
         value           uniform 0;
     }
 
+    region1_to_solid
+    {
+        type            fixedFluxPressure;
+        value           uniform 0;
+    }
+
     fluid_to_region1
     {
         type            fixedFluxPressure;

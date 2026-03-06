@@ -37,6 +37,14 @@ boundaryField
         value           uniform 300;
     }
 
+    region1_to_solid
+    {
+        type            compressible::turbulentTemperatureCoupledBaffleMixed;
+        Tnbr            T;
+        kappaMethod     fluidThermo;
+        value           uniform 300;
+    }
+
     fluid_to_region1
     {
         type            compressible::turbulentTemperatureCoupledBaffleMixed;

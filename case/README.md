@@ -40,7 +40,7 @@ cd case
 - 多区域 `setFields -region solid` 会读取 `system/solid/setFieldsDict`；该文件已提供。
 - `0/solid/T` 与 `0.orig/solid/T` 同时提供 `solid_to_fluid` 和 `solid_to_region1` 边界项，兼容 `splitMeshRegions` 不同命名结果。
 - 已补充并修正 `constant/fluid/physicalProperties`（包含 `thermoType`/`mixture`），避免求解器报 `cannot find file .../physicalProperties` 或 `keyword thermoType is undefined`。
-- `0/fluid/*` 与 `0.orig/fluid/*` 同时提供 `fluid_to_solid` 和 `fluid_to_region1` 边界项，兼容 `splitMeshRegions` 的不同命名。
+- `0/fluid/*` 与 `0.orig/fluid/*` 同时提供 `fluid_to_solid`、`region1_to_solid` 和 `fluid_to_region1` 边界项，兼容 `splitMeshRegions` 的不同命名。
 - `system/controlDict` 已包含 `regionSolvers`，避免 `decomposePar` 报 `keyword regionSolvers is undefined`。
 - `controlDict/regionSolvers` 需使用 primitive 写法：`fluid fluid; solid solid;`（不是子字典，也不是 `chtMultiRegionFoam`），可避免 IO/FATAL 与 `solvers table is empty`。
 - `splitMeshRegions` 若把外部区域命名成 `region0/region1/...`，`Allrun` 会自动识别并映射为 `fluid`，避免 `decomposePar` 报 `cannot find file "points" in directory "fluid/polyMesh"`。

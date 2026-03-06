@@ -38,6 +38,15 @@ boundaryField
         value           uniform (0 0 0);
     }
 
+    region1_to_solid
+    {
+        type            rotatingWallVelocity;
+        origin          (0 0 0);
+        axis            (0 0 1);
+        omega           100;
+        value           uniform (0 0 0);
+    }
+
     fluid_to_region1
     {
         type            rotatingWallVelocity;
