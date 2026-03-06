@@ -36,6 +36,17 @@ if [ ! -f "log.decomposePar" ] || [ "$need_pre" -eq 1 ]; then
     runApplication snappyHexMesh -overwrite
     runApplication splitMeshRegions -cellZones -overwrite
 
+    # 4.1) splitMeshRegions 常见命名兜底：若外部区域被命名为 region0，则映射为 fluid
+    if [ ! -f "constant/fluid/polyMesh/points" ] && [ -f "constant/region0/polyMesh/points" ]; then
+        echo "检测到 constant/region0 -> 重命名为 constant/fluid"
+        rm -rf constant/fluid
+        mv constant/region0 constant/fluid
+    fi
+
+    # 4.2) 强校验：decomposePar -allRegions 前必须存在 fluid/solid 网格
+    [ -f "constant/fluid/polyMesh/points" ] || { echo "ERROR: missing constant/fluid/polyMesh/points" >&2; exit 1; }
+    [ -f "constant/solid/polyMesh/points" ] || { echo "ERROR: missing constant/solid/polyMesh/points" >&2; exit 1; }
+
     # 5) 初始化多区域场（仅对 solid 执行 setFields）
     # 说明：setFieldsDict 仅用于给固体区域赋初值；对 fluid 调用会在某些工况下触发
     # "cannot find file points in fluid/polyMesh"。
