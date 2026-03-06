@@ -5,6 +5,16 @@ cd "${0%/*}" || exit 1
 
 set -e
 
+PYTHON_BIN=""
+if command -v python3 >/dev/null 2>&1; then
+    PYTHON_BIN="python3"
+elif command -v python >/dev/null 2>&1; then
+    PYTHON_BIN="python"
+else
+    echo "ERROR: python3/python not found, cannot patch processor boundary entries" >&2
+    exit 1
+fi
+
 ensure_proc_entries_for_field() {
     fieldFile="$1"
     boundaryFile="$2"
@@ -15,7 +25,7 @@ ensure_proc_entries_for_field() {
     patchList=$(awk '/procBoundary[0-9]+to[0-9]+/ {for (i=1;i<=NF;i++) if ($i ~ /procBoundary[0-9]+to[0-9]+/) {gsub(/[^A-Za-z0-9]/,"",$i); print $i}}' "$boundaryFile")
     [ -n "$patchList" ] || return 0
 
-    python - "$fieldFile" $patchList <<'PY2'
+    "$PYTHON_BIN" - "$fieldFile" $patchList <<'PY2'
 import sys
 from pathlib import Path
 
