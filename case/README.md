@@ -51,6 +51,21 @@ cd case
 
 - 固体 `thermoType` 使用 OF12 支持组合：`transport constIsoSolid` + `thermo eConst` + `energy sensibleInternalEnergy`（不是 `constIso`/`hConst`/`sensibleEnthalpy`），避免 `Unknown transport type constIso`、`Unknown thermo type hConst` 与 `Unknown energy type sensibleEnthalpy`。
 
+
+## 提交前自检（减少反复迭代）
+
+新增 `Allcheck`，用于在运行 `Allrun` 前快速检查常见缺文件/配置不兼容问题：
+
+```bash
+./Allcheck
+```
+
+它会重点检查：
+- `system/fluid`、`system/solid` 的 region 级 `fvSchemes/fvSolution` 是否齐全；
+- `regionSolvers` 是否是 OF12 兼容写法（`fluid fluid;`、`solid solid;`）；
+- 固体热物性是否为 OF12 兼容组合（`constIsoSolid + eConst + sensibleInternalEnergy`）；
+- `0/` 与 `0.orig/` 关键初值文件和并行 `procBoundary.*` 通配边界是否存在。
+
 ## 典型可调参数
 
 1. 球半径、计算域尺寸：`system/blockMeshDict`, `system/snappyHexMeshDict`
