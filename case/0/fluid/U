@@ -1,0 +1,70 @@
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       volVectorField;
+    object      U;
+}
+
+dimensions      [0 1 -1 0 0 0 0];
+internalField   uniform (3 0 0);
+
+boundaryField
+{
+    inlet
+    {
+        type            fixedValue;
+        value           uniform (3 0 0);
+    }
+
+    outlet
+    {
+        type            inletOutlet;
+        inletValue      uniform (3 0 0);
+        value           uniform (3 0 0);
+    }
+
+    sideWalls
+    {
+        type            slip;
+    }
+
+    fluid_to_solid
+    {
+        type            rotatingWallVelocity;
+        origin          (0 0 0);
+        axis            (0 0 1);
+        omega           100;
+        value           uniform (0 0 0);
+    }
+
+    region1_to_solid
+    {
+        type            rotatingWallVelocity;
+        origin          (0 0 0);
+        axis            (0 0 1);
+        omega           100;
+        value           uniform (0 0 0);
+    }
+
+    fluid_to_region1
+    {
+        type            rotatingWallVelocity;
+        origin          (0 0 0);
+        axis            (0 0 1);
+        omega           100;
+        value           uniform (0 0 0);
+    }
+
+    "proBoundary.*"
+    {
+        type            processor;
+    }
+
+
+    "procBoundary.*"
+    {
+        type            processor;
+    }
+
+}

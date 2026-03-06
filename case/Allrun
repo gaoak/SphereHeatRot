@@ -1,0 +1,145 @@
+#!/bin/sh
+cd "${0%/*}" || exit 1
+. "${WM_PROJECT_DIR:?}/bin/tools/RunFunctions"
+#------------------------------------------------------------------------------
+
+set -e
+
+ensure_proc_entries_for_field() {
+    fieldFile="$1"
+    boundaryFile="$2"
+
+    [ -f "$fieldFile" ] || return 0
+    [ -f "$boundaryFile" ] || return 0
+
+    patchList=$(awk '/^[[:space:]]*procBoundary[0-9]+to[0-9]+[[:space:]]*$/{gsub(/[[:space:]]/,"",$0); print $0}' "$boundaryFile")
+    [ -n "$patchList" ] || return 0
+
+    addBlock=""
+    for p in $patchList; do
+        if ! awk -v p="$p" 'BEGIN{f=0} $0 ~ "^[[:space:]]*" p "[[:space:]]*$" {f=1} END{exit !f}' "$fieldFile"; then
+            addBlock="$addBlock
+    $p
+    {
+        type            processor;
+    }
+"
+        fi
+    done
+
+    [ -n "$addBlock" ] || return 0
+
+    awk -v block="$addBlock" '
+    { lines[NR] = $0 }
+    END {
+        lines[NR] = block "\n" lines[NR]
+        for (i=1; i<=NR; ++i) print lines[i]
+    }' "$fieldFile" > "$fieldFile.tmp" && mv "$fieldFile.tmp" "$fieldFile"
+}
+
+ensure_processor_boundary_entries() {
+    for procDir in processor*; do
+        [ -d "$procDir" ] || continue
+
+        # fluid fields
+        for f in U T p p_rgh; do
+            ensure_proc_entries_for_field \
+                "$procDir/0/fluid/$f" \
+                "$procDir/constant/fluid/polyMesh/boundary"
+        done
+
+        # solid fields
+        ensure_proc_entries_for_field \
+            "$procDir/0/solid/T" \
+            "$procDir/constant/solid/polyMesh/boundary"
+    done
+}
+
+need_pre=0
+
+# 若缺少关键网格/并行文件，则必须重做预处理
+[ -f "constant/fluid/polyMesh/points" ] || need_pre=1
+[ -f "constant/solid/polyMesh/points" ] || need_pre=1
+[ -f "processor0/fluid/polyMesh/points" ] || need_pre=1
+
+# 仅当日志存在且关键文件齐全，才允许跳过
+if [ ! -f "log.decomposePar" ] || [ "$need_pre" -eq 1 ]; then
+    echo "执行预处理（建网格/分区/初始化/分解）..."
+
+    # 0) 清理旧并行与后处理残留
+    rm -rf processor*
+    rm -rf postProcessing
+    rm -rf VTK
+
+    # 1) 还原初始场（从 0.orig）
+    rm -rf 0
+    cp -r 0.orig 0
+
+    # 2) 清理 cellToRegion 等中间文件
+    rm -f 0/cellToRegion 0/*/cellToRegion constant/cellToRegion
+
+    # 3) 清理旧日志
+    rm -f log.decomposePar log.blockMesh log.snappyHexMesh log.splitMeshRegions log.setFields* log.decomposePar*
+
+    # 4) 网格与区域划分
+    runApplication blockMesh
+    runApplication snappyHexMesh -overwrite
+    runApplication splitMeshRegions -cellZones -overwrite
+
+    # 4.1) splitMeshRegions 命名兜底：自动识别外部流体区域并映射为 fluid
+    if [ ! -f "constant/fluid/polyMesh/points" ]; then
+        fluidCandidate=""
+        for d in constant/*; do
+            [ -d "$d/polyMesh" ] || continue
+            b=$(basename "$d")
+            [ "$b" = "solid" ] && continue
+            [ "$b" = "fluid" ] && continue
+            [ "$b" = "polyMesh" ] && continue
+            fluidCandidate="$b"
+            break
+        done
+
+        if [ -n "$fluidCandidate" ] && [ -f "constant/$fluidCandidate/polyMesh/points" ]; then
+            echo "检测到 constant/$fluidCandidate/polyMesh -> 映射到 constant/fluid/polyMesh"
+            mkdir -p constant/fluid
+            rm -rf constant/fluid/polyMesh
+            mv "constant/$fluidCandidate/polyMesh" constant/fluid/polyMesh
+            # 删除候选目录（若为空）
+            rmdir "constant/$fluidCandidate" 2>/dev/null || true
+        fi
+    fi
+
+    # 4.2) 强校验：decomposePar -allRegions 前必须存在 fluid/solid 网格
+    [ -f "constant/fluid/polyMesh/points" ] || { echo "ERROR: missing constant/fluid/polyMesh/points" >&2; exit 1; }
+    [ -f "constant/solid/polyMesh/points" ] || { echo "ERROR: missing constant/solid/polyMesh/points" >&2; exit 1; }
+
+    # 5) 初始化多区域场（仅对 solid 执行 setFields）
+    # 说明：setFieldsDict 仅用于给固体区域赋初值；对 fluid 调用会在某些工况下触发
+    # "cannot find file points in fluid/polyMesh"。
+    if [ -f "constant/solid/polyMesh/points" ]; then
+        runApplication -s setFieldsSolid setFields -region solid
+    else
+        echo "ERROR: missing constant/solid/polyMesh/points after splitMeshRegions" >&2
+        exit 1
+    fi
+
+    # 6) 并行分解（所有 region）
+    runApplication decomposePar -allRegions -copyZero -cellProc
+
+    # 6.1) 兜底修复：为 processor*/0 场文件补齐显式 procBoundaryXtoY 项
+    ensure_processor_boundary_entries
+
+    touch log.decomposePar
+else
+    echo "检测到已有分解结果，跳过预处理，直接并行求解..."
+    # 对旧分解结果也做一次兜底修复，避免历史目录缺失 procBoundary 条目
+    ensure_processor_boundary_entries
+fi
+
+# 7) 并行求解
+runParallel chtMultiRegionFoam
+
+# 8) 可选回收串行结果（按需启用）
+# runApplication reconstructPar -allRegions
+
+#------------------------------------------------------------------------------

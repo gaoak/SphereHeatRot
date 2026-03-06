@@ -1,0 +1,85 @@
+#!/bin/sh
+cd "${0%/*}" || exit 1
+
+# OpenFOAM case preflight checks to catch common runtime configuration errors early.
+
+fail=0
+
+check_file() {
+    if [ ! -f "$1" ]; then
+        echo "[FAIL] missing file: $1"
+        fail=1
+    else
+        echo "[ OK ] file exists: $1"
+    fi
+}
+
+check_contains() {
+    file="$1"
+    pattern="$2"
+    msg="$3"
+    if rg -n "$pattern" "$file" >/dev/null 2>&1; then
+        echo "[ OK ] $msg"
+    else
+        echo "[FAIL] $msg"
+        fail=1
+    fi
+}
+
+# Core region dictionaries
+check_file system/controlDict
+check_file system/fluid/fvSchemes
+check_file system/fluid/fvSolution
+check_file system/solid/fvSchemes
+check_file system/solid/fvSolution
+check_file system/solid/setFieldsDict
+
+# Thermophysical dictionaries
+check_file constant/fluid/physicalProperties
+check_file constant/fluid/thermophysicalProperties
+check_file constant/solid/thermophysicalProperties
+
+# Required 0/ fields for parallel copyZero
+check_file 0/fluid/U
+check_file 0/fluid/T
+check_file 0/fluid/p
+check_file 0/fluid/p_rgh
+check_file 0/solid/T
+check_file 0.orig/fluid/U
+check_file 0.orig/fluid/T
+check_file 0.orig/fluid/p
+check_file 0.orig/fluid/p_rgh
+check_file 0.orig/solid/T
+
+# OF12-specific solver/thermo compatibility checks
+check_contains system/controlDict "regionSolvers" "controlDict defines regionSolvers"
+check_contains system/controlDict "fluid[[:space:]]+fluid;" "regionSolvers contains: fluid fluid;"
+check_contains system/controlDict "solid[[:space:]]+solid;" "regionSolvers contains: solid solid;"
+
+check_contains constant/solid/thermophysicalProperties "transport[[:space:]]+constIsoSolid;" "solid transport uses constIsoSolid"
+check_contains constant/solid/thermophysicalProperties "thermo[[:space:]]+eConst;" "solid thermo uses eConst"
+check_contains constant/solid/thermophysicalProperties "energy[[:space:]]+sensibleInternalEnergy;" "solid energy uses sensibleInternalEnergy"
+
+check_contains constant/fluid/physicalProperties "thermoType" "fluid physicalProperties includes thermoType"
+check_contains 0/fluid/T "\"procBoundary\\.\*\"" "0/fluid/T has procBoundary.* processor patch wildcard"
+check_contains 0/solid/T "\"procBoundary\\.\*\"" "0/solid/T has procBoundary.* processor patch wildcard"
+
+# If decomposed results already exist, verify explicit procBoundary entries exist in processor fields
+if [ -d processor0 ]; then
+    for procField in processor*/0/solid/T; do
+        [ -f "$procField" ] || continue
+        procId=$(echo "$procField" | awk -F/ '{print $1}')
+        meshBoundary="$procId/constant/solid/polyMesh/boundary"
+        [ -f "$meshBoundary" ] || continue
+        for p in $(awk '/^[[:space:]]*procBoundary[0-9]+to[0-9]+[[:space:]]*$/{gsub(/[[:space:]]/,"",$0); print $0}' "$meshBoundary"); do
+            check_contains "$procField" "^[[:space:]]*$p[[:space:]]*$" "$procField contains explicit $p entry"
+        done
+    done
+fi
+
+if [ "$fail" -ne 0 ]; then
+    echo "\nPreflight check FAILED. Fix above issues before running Allrun."
+    exit 1
+fi
+
+echo "\nPreflight check PASSED."
