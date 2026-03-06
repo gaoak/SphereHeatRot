@@ -75,3 +75,6 @@ cd case
 4. 固体初始温度：`0/solid/T`
 5. 材料属性与常密度设置：`constant/fluid/thermophysicalProperties`, `constant/fluid/physicalProperties`, `constant/solid/thermophysicalProperties`
 
+
+- `Allrun` 现已直接使用 `runParallel foamMultiRun`（不再调用 `chtMultiRegionFoam` 包装入口），避免重复 superseded 提示。
+- `system/fluid/fvSchemes` 已显式补充 `div(phi,K)`，避免启动后报 `Cannot find scheme for div(phi,K)`。

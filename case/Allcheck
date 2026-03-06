@@ -76,6 +76,7 @@ check_contains constant/solid/thermophysicalProperties "thermo[[:space:]]+eConst
 check_contains constant/solid/thermophysicalProperties "energy[[:space:]]+sensibleInternalEnergy;" "solid energy uses sensibleInternalEnergy"
 
 check_contains constant/fluid/physicalProperties "thermoType" "fluid physicalProperties includes thermoType"
+check_contains system/fluid/fvSchemes "div\(phi,K\)" "fluid fvSchemes defines div(phi,K)"
 check_contains 0/fluid/T "\"procBoundary\\.\*\"" "0/fluid/T has procBoundary.* processor patch wildcard"
 check_contains 0/solid/T "\"procBoundary\\.\*\"" "0/solid/T has procBoundary.* processor patch wildcard"
 

@@ -181,7 +181,7 @@ else
 fi
 
 # 7) 并行求解
-runParallel chtMultiRegionFoam
+runParallel foamMultiRun
 
 # 8) 可选回收串行结果（按需启用）
 # runApplication reconstructPar -allRegions
