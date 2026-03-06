@@ -50,9 +50,12 @@ if [ ! -f "log.decomposePar" ] || [ "$need_pre" -eq 1 ]; then
         done
 
         if [ -n "$fluidCandidate" ] && [ -f "constant/$fluidCandidate/polyMesh/points" ]; then
-            echo "检测到 constant/$fluidCandidate -> 重命名为 constant/fluid"
-            rm -rf constant/fluid
-            mv "constant/$fluidCandidate" constant/fluid
+            echo "检测到 constant/$fluidCandidate/polyMesh -> 映射到 constant/fluid/polyMesh"
+            mkdir -p constant/fluid
+            rm -rf constant/fluid/polyMesh
+            mv "constant/$fluidCandidate/polyMesh" constant/fluid/polyMesh
+            # 删除候选目录（若为空）
+            rmdir "constant/$fluidCandidate" 2>/dev/null || true
         fi
     fi
 

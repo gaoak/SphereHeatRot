@@ -44,6 +44,7 @@ cd case
 - `system/controlDict` 已包含 `regionSolvers`，避免 `decomposePar` 报 `keyword regionSolvers is undefined`。
 - `controlDict/regionSolvers` 需使用 primitive 写法：`fluid fluid; solid solid;`（不是子字典，也不是 `chtMultiRegionFoam`），可避免 IO/FATAL 与 `solvers table is empty`。
 - `splitMeshRegions` 若把外部区域命名成 `region0/region1/...`，`Allrun` 会自动识别并映射为 `fluid`，避免 `decomposePar` 报 `cannot find file "points" in directory "fluid/polyMesh"`。
+- `Allrun` 在 region 映射时仅移动 `polyMesh` 到 `constant/fluid/polyMesh`，不会覆盖 `constant/fluid/physicalProperties` 等物性字典。
 
 ## 典型可调参数
 
