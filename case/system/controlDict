@@ -11,8 +11,14 @@ application     chtMultiRegionFoam;
 
 regionSolvers
 {
-    fluid       chtMultiRegionFoam;
-    solid       chtMultiRegionFoam;
+    fluid
+    {
+        solver  fluid;
+    }
+    solid
+    {
+        solver  solid;
+    }
 }
 
 startFrom       startTime;
