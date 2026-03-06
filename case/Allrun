@@ -36,9 +36,15 @@ if [ ! -f "log.decomposePar" ] || [ "$need_pre" -eq 1 ]; then
     runApplication snappyHexMesh -overwrite
     runApplication splitMeshRegions -cellZones -overwrite
 
-    # 5) 初始化多区域场（显式指定 region，避免 setFields.C: Field T not found）
-    runApplication -s setFieldsFluid setFields -region fluid
-    runApplication -s setFieldsSolid setFields -region solid
+    # 5) 初始化多区域场（仅对 solid 执行 setFields）
+    # 说明：setFieldsDict 仅用于给固体区域赋初值；对 fluid 调用会在某些工况下触发
+    # "cannot find file points in fluid/polyMesh"。
+    if [ -f "constant/solid/polyMesh/points" ]; then
+        runApplication -s setFieldsSolid setFields -region solid
+    else
+        echo "ERROR: missing constant/solid/polyMesh/points after splitMeshRegions" >&2
+        exit 1
+    fi
 
     # 6) 并行分解（所有 region）
     runApplication decomposePar -allRegions -copyZero -cellProc
