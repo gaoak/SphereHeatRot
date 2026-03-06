@@ -1,2 +1,4 @@
-# Reduce merge conflicts for frequently appended troubleshooting notes.
+# Reduce merge conflicts for frequently appended troubleshooting notes/checklists.
 case/README.md merge=union
+case/Allcheck merge=union
+.gitignore merge=union
