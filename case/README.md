@@ -40,7 +40,7 @@ cd case
 - 多区域 `setFields -region solid` 会读取 `system/solid/setFieldsDict`；该文件已提供。
 - `0/solid/T` 与 `0.orig/solid/T` 同时提供 `solid_to_fluid` 和 `solid_to_region1` 边界项，兼容 `splitMeshRegions` 不同命名结果。
 - `system/controlDict` 已包含 `regionSolvers`，避免 `decomposePar` 报 `keyword regionSolvers is undefined`。
-- `splitMeshRegions` 若将外部区域命名为 `region0`，`Allrun` 会自动映射为 `fluid`，避免 `decomposePar` 报 `cannot find file "points" in directory "fluid/polyMesh"`。
+- `splitMeshRegions` 若把外部区域命名成 `region0/region1/...`，`Allrun` 会自动识别并映射为 `fluid`，避免 `decomposePar` 报 `cannot find file "points" in directory "fluid/polyMesh"`。
 
 ## 典型可调参数
 

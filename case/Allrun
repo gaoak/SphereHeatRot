@@ -36,11 +36,24 @@ if [ ! -f "log.decomposePar" ] || [ "$need_pre" -eq 1 ]; then
     runApplication snappyHexMesh -overwrite
     runApplication splitMeshRegions -cellZones -overwrite
 
-    # 4.1) splitMeshRegions 常见命名兜底：若外部区域被命名为 region0，则映射为 fluid
-    if [ ! -f "constant/fluid/polyMesh/points" ] && [ -f "constant/region0/polyMesh/points" ]; then
-        echo "检测到 constant/region0 -> 重命名为 constant/fluid"
-        rm -rf constant/fluid
-        mv constant/region0 constant/fluid
+    # 4.1) splitMeshRegions 命名兜底：自动识别外部流体区域并映射为 fluid
+    if [ ! -f "constant/fluid/polyMesh/points" ]; then
+        fluidCandidate=""
+        for d in constant/*; do
+            [ -d "$d/polyMesh" ] || continue
+            b=$(basename "$d")
+            [ "$b" = "solid" ] && continue
+            [ "$b" = "fluid" ] && continue
+            [ "$b" = "polyMesh" ] && continue
+            fluidCandidate="$b"
+            break
+        done
+
+        if [ -n "$fluidCandidate" ] && [ -f "constant/$fluidCandidate/polyMesh/points" ]; then
+            echo "检测到 constant/$fluidCandidate -> 重命名为 constant/fluid"
+            rm -rf constant/fluid
+            mv "constant/$fluidCandidate" constant/fluid
+        fi
     fi
 
     # 4.2) 强校验：decomposePar -allRegions 前必须存在 fluid/solid 网格
