@@ -44,6 +44,7 @@ cd case
 - 已为 `0/*` 与 `0.orig/*` 增加 `"procBoundary.*"`（并保留 `"proBoundary.*"`）`type processor` 通配边界，兼容 `procBoundary0to1/1to0/2to0/...` 等命名。
 - 已补充 `0/fluid/p` 与 `0.orig/fluid/p`，避免并行后报 `cannot find file .../processor0/0/fluid/p`。
 - `system/controlDict` 已包含 `regionSolvers`，避免 `decomposePar` 报 `keyword regionSolvers is undefined`。
+- 已补充 `system/fluid/{fvSchemes,fvSolution}` 与 `system/solid/{fvSchemes,fvSolution}`，避免求解器报 `cannot find file case/system/<region>/fvSchemes`。
 - `controlDict/regionSolvers` 需使用 primitive 写法：`fluid fluid; solid solid;`（不是子字典，也不是 `chtMultiRegionFoam`），可避免 IO/FATAL 与 `solvers table is empty`。
 - `splitMeshRegions` 若把外部区域命名成 `region0/region1/...`，`Allrun` 会自动识别并映射为 `fluid`，避免 `decomposePar` 报 `cannot find file "points" in directory "fluid/polyMesh"`。
 - `Allrun` 在 region 映射时仅移动 `polyMesh` 到 `constant/fluid/polyMesh`，不会覆盖 `constant/fluid/physicalProperties` 等物性字典。
