@@ -42,6 +42,7 @@ cd case
 - 已补充并修正 `constant/fluid/physicalProperties`（包含 `thermoType`/`mixture`），避免求解器报 `cannot find file .../physicalProperties` 或 `keyword thermoType is undefined`。
 - `0/fluid/*` 与 `0.orig/fluid/*` 同时提供 `fluid_to_solid`、`region1_to_solid` 和 `fluid_to_region1` 边界项，兼容 `splitMeshRegions` 的不同命名。
 - 已为 `0/*` 与 `0.orig/*` 增加 `"procBoundary.*"`（并保留 `"proBoundary.*"`）`type processor` 通配边界，兼容 `procBoundary0to1/1to0/2to0/...` 等命名。
+- 已补充 `0/fluid/p` 与 `0.orig/fluid/p`，避免并行后报 `cannot find file .../processor0/0/fluid/p`。
 - `system/controlDict` 已包含 `regionSolvers`，避免 `decomposePar` 报 `keyword regionSolvers is undefined`。
 - `controlDict/regionSolvers` 需使用 primitive 写法：`fluid fluid; solid solid;`（不是子字典，也不是 `chtMultiRegionFoam`），可避免 IO/FATAL 与 `solvers table is empty`。
 - `splitMeshRegions` 若把外部区域命名成 `region0/region1/...`，`Allrun` 会自动识别并映射为 `fluid`，避免 `decomposePar` 报 `cannot find file "points" in directory "fluid/polyMesh"`。
@@ -51,7 +52,7 @@ cd case
 
 1. 球半径、计算域尺寸：`system/blockMeshDict`, `system/snappyHexMeshDict`
 2. 转速：`0/fluid/U` 中 `omega`（rad/s）
-3. 来流速度与温度：`0/fluid/U`, `0/fluid/T`
+3. 来流速度、温度与压力：`0/fluid/U`, `0/fluid/T`, `0/fluid/p`
 4. 固体初始温度：`0/solid/T`
 5. 材料属性与常密度设置：`constant/fluid/thermophysicalProperties`, `constant/fluid/physicalProperties`, `constant/solid/thermophysicalProperties`
 
