@@ -65,6 +65,7 @@ cd case
 - `regionSolvers` 是否是 OF12 兼容写法（`fluid fluid;`、`solid solid;`）；
 - 固体热物性是否为 OF12 兼容组合（`constIsoSolid + eConst + sensibleInternalEnergy`）；
 - `0/` 与 `0.orig/` 关键初值文件和并行 `procBoundary.*` 通配边界是否存在。
+- 若已存在 `processor*` 目录，会额外检查 `processor*/0/solid/T` 中是否有显式 `procBoundaryXtoY` 条目（避免并行启动时报 `Cannot find patchField entry for procBoundary...`）。
 
 ## 典型可调参数
 

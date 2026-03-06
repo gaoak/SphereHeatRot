@@ -5,6 +5,56 @@ cd "${0%/*}" || exit 1
 
 set -e
 
+ensure_proc_entries_for_field() {
+    fieldFile="$1"
+    boundaryFile="$2"
+
+    [ -f "$fieldFile" ] || return 0
+    [ -f "$boundaryFile" ] || return 0
+
+    patchList=$(awk '/^[[:space:]]*procBoundary[0-9]+to[0-9]+[[:space:]]*$/{gsub(/[[:space:]]/,"",$0); print $0}' "$boundaryFile")
+    [ -n "$patchList" ] || return 0
+
+    addBlock=""
+    for p in $patchList; do
+        if ! awk -v p="$p" 'BEGIN{f=0} $0 ~ "^[[:space:]]*" p "[[:space:]]*$" {f=1} END{exit !f}' "$fieldFile"; then
+            addBlock="$addBlock
+    $p
+    {
+        type            processor;
+    }
+"
+        fi
+    done
+
+    [ -n "$addBlock" ] || return 0
+
+    awk -v block="$addBlock" '
+    { lines[NR] = $0 }
+    END {
+        lines[NR] = block "\n" lines[NR]
+        for (i=1; i<=NR; ++i) print lines[i]
+    }' "$fieldFile" > "$fieldFile.tmp" && mv "$fieldFile.tmp" "$fieldFile"
+}
+
+ensure_processor_boundary_entries() {
+    for procDir in processor*; do
+        [ -d "$procDir" ] || continue
+
+        # fluid fields
+        for f in U T p p_rgh; do
+            ensure_proc_entries_for_field \
+                "$procDir/0/fluid/$f" \
+                "$procDir/constant/fluid/polyMesh/boundary"
+        done
+
+        # solid fields
+        ensure_proc_entries_for_field \
+            "$procDir/0/solid/T" \
+            "$procDir/constant/solid/polyMesh/boundary"
+    done
+}
+
 need_pre=0
 
 # 若缺少关键网格/并行文件，则必须重做预处理
@@ -76,9 +126,14 @@ if [ ! -f "log.decomposePar" ] || [ "$need_pre" -eq 1 ]; then
     # 6) 并行分解（所有 region）
     runApplication decomposePar -allRegions -copyZero -cellProc
 
+    # 6.1) 兜底修复：为 processor*/0 场文件补齐显式 procBoundaryXtoY 项
+    ensure_processor_boundary_entries
+
     touch log.decomposePar
 else
     echo "检测到已有分解结果，跳过预处理，直接并行求解..."
+    # 对旧分解结果也做一次兜底修复，避免历史目录缺失 procBoundary 条目
+    ensure_processor_boundary_entries
 fi
 
 # 7) 并行求解

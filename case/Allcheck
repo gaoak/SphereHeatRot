@@ -64,6 +64,19 @@ check_contains constant/fluid/physicalProperties "thermoType" "fluid physicalPro
 check_contains 0/fluid/T "\"procBoundary\\.\*\"" "0/fluid/T has procBoundary.* processor patch wildcard"
 check_contains 0/solid/T "\"procBoundary\\.\*\"" "0/solid/T has procBoundary.* processor patch wildcard"
 
+# If decomposed results already exist, verify explicit procBoundary entries exist in processor fields
+if [ -d processor0 ]; then
+    for procField in processor*/0/solid/T; do
+        [ -f "$procField" ] || continue
+        procId=$(echo "$procField" | awk -F/ '{print $1}')
+        meshBoundary="$procId/constant/solid/polyMesh/boundary"
+        [ -f "$meshBoundary" ] || continue
+        for p in $(awk '/^[[:space:]]*procBoundary[0-9]+to[0-9]+[[:space:]]*$/{gsub(/[[:space:]]/,"",$0); print $0}' "$meshBoundary"); do
+            check_contains "$procField" "^[[:space:]]*$p[[:space:]]*$" "$procField contains explicit $p entry"
+        done
+    done
+fi
+
 if [ "$fail" -ne 0 ]; then
     echo "\nPreflight check FAILED. Fix above issues before running Allrun."
     exit 1
